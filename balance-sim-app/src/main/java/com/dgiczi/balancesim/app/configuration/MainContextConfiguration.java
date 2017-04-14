@@ -1,4 +1,4 @@
-package com.dgiczi.balancesim.balanceapp.configuration;
+package com.dgiczi.balancesim.app.configuration;
 
 import org.springframework.context.annotation.Configuration;
 
