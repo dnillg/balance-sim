@@ -4,6 +4,7 @@ import com.dgiczi.balancesim.render.SceneRenderer;
 import com.dgiczi.balancesim.render.model.RenderParams;
 import com.dgiczi.balancesim.render.model.RenderState;
 import com.dgiczi.balancesim.simulation.SceneSimulator;
+import com.dgiczi.balancesim.simulation.model.SimulatorState;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.scene.canvas.Canvas;
@@ -17,7 +18,7 @@ import org.springframework.stereotype.Component;
 public class Worker extends Task<Integer> {
 
     private static final double HZ = 60;
-    private static final double PERIOD_TIME_S = 1 / HZ;
+    private static final double PERIOD_TIME_S = 1.0 / HZ;
     private static final long PERIOD_TIME_MS = (long) (PERIOD_TIME_S * 1000);
     private static final double MM_PER_PX = 1.0 / 2.5;
 
@@ -32,7 +33,7 @@ public class Worker extends Task<Integer> {
         this.graphicsContext = canvas.getGraphicsContext2D();
         this.sceneSimulator = sceneSimulator;
         this.sceneRenderer = sceneRenderer;
-        this.renderParams = new RenderParams(60, 140, 33, MM_PER_PX);
+        this.renderParams = new RenderParams(60, 140, 33.5, MM_PER_PX);
     }
 
     public void stop() {
@@ -44,14 +45,16 @@ public class Worker extends Task<Integer> {
         sceneSimulator.init();
         long lastTime = System.currentTimeMillis() - PERIOD_TIME_MS;
         while (!stopped) {
-            long currentTime = System.currentTimeMillis();
-            long diff = lastTime + PERIOD_TIME_MS - currentTime;
-            if (diff > 0) {
+            long diff = lastTime + PERIOD_TIME_MS - System.currentTimeMillis();
+            while (diff > 0) {
                 Thread.sleep(diff);
+                diff = lastTime + PERIOD_TIME_MS - System.currentTimeMillis();
             }
             lastTime = System.currentTimeMillis();
             sceneSimulator.step(PERIOD_TIME_S);
-            RenderState state = new RenderState(sceneSimulator.getState().getDistance(), sceneSimulator.getState().getTilt());
+            SimulatorState simulatorState = sceneSimulator.getState();
+            RenderState state = new RenderState(simulatorState.getPosX(), simulatorState.getPosY(), simulatorState.getTilt());
+
             Platform.runLater(() -> sceneRenderer.render(graphicsContext, renderParams, state));
         }
         return 0;

@@ -26,10 +26,10 @@ public class TestApp extends TestbedTest {
         //m_world = new World(new Vec2(0.0F, -10.0F));
         getWorld().setGravity(new Vec2(0, -100));
 
-        SimulatorParams simulatorParams = new SimulatorParams(3.0, 12, 3.5, 800, 200, 0, 0, 1000);
+        SimulatorParams simulatorParams = new SimulatorParams(60, 140, 33.5, 800, 200, 0, 0, 1000).withScale(0.1);
         SceneSimulator.addGround(getWorld());
         SceneSimulator.addBalanceRobotParts(getWorld(), simulatorParams);
-        getWorld().getJointList().getBodyA().applyForce(new Vec2(-100000f,0f), new Vec2(0f, -5.5f));
+        getWorld().getJointList().getBodyA().applyForce(new Vec2(-100000f,0), new Vec2(0f, 0));
     }
 
     @Override

@@ -28,6 +28,13 @@ public class SimulatorParams {
         this.maxTorque = maxTorque;
     }
 
+    public SimulatorParams withScale(double scale) {
+        return new SimulatorParams(
+                bodyWidth * scale, bodyHeight * scale, wheelRadius * scale,
+                bodyMass, wheelsMass, centroidX * scale,
+                centroidY * scale, maxTorque);
+    };
+
     public double getBodyWidth() {
         return bodyWidth;
     }
@@ -38,6 +45,10 @@ public class SimulatorParams {
 
     public double getWheelRadius() {
         return wheelRadius;
+    }
+
+    public double getWheelDiameter() {
+        return wheelRadius * 2;
     }
 
     public double getBodyMass() {

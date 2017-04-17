@@ -52,7 +52,7 @@ public class App extends Application {
         primaryStage.setScene(scene);
         primaryStage.show();
 
-        SimulatorParams simulatorParams = new SimulatorParams(3.0, 12, 3.5, 800, 200, 0, 0, 1000);
+        SimulatorParams simulatorParams = new SimulatorParams(60, 140, 33.5, 800, 200, 0, 0, 1000);
         Worker worker = createWorker(canvas, simulatorParams);
         primaryStage.setOnCloseRequest(getWindowCloseHandler(worker));
         startWorker(canvas, worker);
