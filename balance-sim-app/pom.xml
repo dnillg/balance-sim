@@ -39,5 +39,15 @@
             <artifactId>balance-sim-render</artifactId>
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
+        <dependency>
+            <groupId>com.dgiczi.balancesim</groupId>
+            <artifactId>balanceapp</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>com.dgiczi.balancesim</groupId>
+            <artifactId>balance-sim-simulation</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
     </dependencies>
 </project>

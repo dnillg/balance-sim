@@ -1,18 +1,22 @@
-package com.dgiczi.balancesim.render.com;
+package com.dgiczi.balancesim.render;
 
-import com.dgiczi.balancesim.render.model.SceneParams;
-import com.dgiczi.balancesim.render.model.State;
-import com.dgiczi.balancesim.render.model.TickType;
+import com.dgiczi.balancesim.render.model.RenderParams;
+import com.dgiczi.balancesim.render.model.RenderState;
+import com.dgiczi.balancesim.render.model.DistanceGridTickType;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
-import javafx.scene.shape.Arc;
 import javafx.scene.shape.ArcType;
-import javafx.scene.shape.Circle;
-import javafx.scene.shape.Rectangle;
 import javafx.scene.text.TextAlignment;
 import javafx.scene.transform.Affine;
+import org.springframework.stereotype.Component;
 
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
+import java.text.NumberFormat;
+import java.util.Locale;
+
+@Component
 public class SceneRenderer {
 
     private static final Paint BACKGROUND_COLOR = Color.gray(0.3);
@@ -28,8 +32,15 @@ public class SceneRenderer {
     private static final int ROAD_OFFSET = 45;
     private static final double SCALE_LINE_WIDTH = 0.5;
     private static final double ROAD_LINE_WIDTH = 0.5;
+    private static final NumberFormat numberFormat = createNumberFormat();
 
-    public void render(GraphicsContext gc, SceneParams params, State state) {
+    private static NumberFormat createNumberFormat() {
+        DecimalFormat decimalFormat = new DecimalFormat("### ##0.000");
+        decimalFormat.setDecimalFormatSymbols(DecimalFormatSymbols.getInstance(Locale.ENGLISH));
+        return decimalFormat;
+    }
+
+    public void render(GraphicsContext gc, RenderParams params, RenderState state) {
         drawBackGround(gc);
 
         drawRoad(gc, params, state);
@@ -47,7 +58,7 @@ public class SceneRenderer {
         gc.setStroke(Color.BLACK);
     }
 
-    private void drawRoad(GraphicsContext gc, SceneParams params, State state) {
+    private void drawRoad(GraphicsContext gc, RenderParams params, RenderState state) {
         double width = gc.getCanvas().getWidth();
         double height = gc.getCanvas().getHeight();
 
@@ -57,7 +68,7 @@ public class SceneRenderer {
         gc.strokeLine(0, height - ROAD_OFFSET, width, height - ROAD_OFFSET);
     }
 
-    private void drawWheel(GraphicsContext gc, SceneParams params, State state) {
+    private void drawWheel(GraphicsContext gc, RenderParams params, RenderState state) {
         double width = gc.getCanvas().getWidth();
         double height = gc.getCanvas().getHeight();
 
@@ -76,54 +87,54 @@ public class SceneRenderer {
                 2 * radius, 2 * radius, 360 + wheelDegree, 720 + wheelDegree, ArcType.ROUND);
     }
 
-    private double getWheelDegree(SceneParams params, State state) {
+    private double getWheelDegree(RenderParams params, RenderState state) {
         double perimeter = 2 * params.getWheelRadius() * Math.PI;
         return (state.getDisatance() % perimeter) / perimeter * -360;
     }
 
-    private void drawBody(GraphicsContext gc, SceneParams params, State state) {
+    private void drawBody(GraphicsContext gc, RenderParams params, RenderState state) {
         double width = gc.getCanvas().getWidth();
         double height = gc.getCanvas().getHeight();
         int wheelRadius = (int) Math.round(params.getWheelRadius() / params.getMmPerPx());
-        double bodyWidth = params.getWidth() / params.getMmPerPx();
-        double bodyHeight = params.getHeight() / params.getMmPerPx();
+        double bodyWidth = params.getBodyWidth() / params.getMmPerPx();
+        double bodyHeight = params.getBodyHeight() / params.getMmPerPx();
 
         Affine affine = new Affine();
-        affine.appendRotation(state.getTilt(), width / 2, height - ROAD_OFFSET - wheelRadius);
+        affine.appendRotation(-state.getTilt(), width / 2, height - ROAD_OFFSET - wheelRadius);
         gc.setFill(BODY_COLOR);
         gc.setTransform(affine);
         gc.fillRect(width / 2 - bodyWidth / 2, height - ROAD_OFFSET - wheelRadius - bodyHeight, bodyWidth, bodyHeight);
         gc.setTransform(new Affine());
     }
 
-    private void drawDistanceScale(GraphicsContext gc, SceneParams params, State state) {
+    private void drawDistanceScale(GraphicsContext gc, RenderParams params, RenderState state) {
         double mmPerPx = params.getMmPerPx();
         double width = gc.getCanvas().getWidth();
         double height = gc.getCanvas().getHeight();
 
         int scaleStartInPx = (int) Math.round(state.getDisatance() / mmPerPx - width / 2);
-        int minorTickOffset = scaleStartInPx % TICK_GAP;
+        int minorTickOffset = (Math.abs(TICK_GAP - scaleStartInPx)) % TICK_GAP;
         int startTickCount = scaleStartInPx / TICK_GAP;
         int tickCountToDraw = (int) (width - minorTickOffset) / TICK_GAP;
         for (int i = 0; i < tickCountToDraw; i++) {
             int tickPosition = minorTickOffset + i * TICK_GAP;
-            TickType tickType = getTickType(startTickCount, i);
+            DistanceGridTickType tickType = getTickType(startTickCount, i);
             gc.setStroke(tickType.getColor());
             gc.strokeLine(tickPosition, height - SCALE_OFFSET, tickPosition, height - SCALE_OFFSET + tickType.getHeight());
         }
         gc.setTextAlign(TextAlignment.CENTER);
         gc.setFill(FONT_COLOR);
-        gc.fillText(state.getDisatance() + " mm", width / 2, height - DISTANCE_TEXT_OFFSET);
+        gc.fillText(numberFormat.format(state.getDisatance()) + " mm", width / 2, height - DISTANCE_TEXT_OFFSET);
     }
 
-    private TickType getTickType(int startTickCount, int i) {
-        TickType tickType;
+    private DistanceGridTickType getTickType(int startTickCount, int i) {
+        DistanceGridTickType tickType;
         if (startTickCount + i == 0) {
-            tickType = TickType.ORIGIN;
+            tickType = DistanceGridTickType.ORIGIN;
         } else if ((startTickCount + i) % 5 == 0) {
-            tickType = TickType.MAJOR;
+            tickType = DistanceGridTickType.MAJOR;
         } else {
-            tickType = TickType.MINOR;
+            tickType = DistanceGridTickType.MINOR;
         }
         return tickType;
     }
