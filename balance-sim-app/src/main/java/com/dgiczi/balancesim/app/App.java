@@ -26,6 +26,8 @@ public class App extends Application {
     private static final int WINDOW_HEIGHT = 600;
 
     private ConfigurableApplicationContext context;
+    private Thread workerThread;
+    private Worker worker;
 
     public static void main(String[] args) {
         Application.launch(args);
@@ -52,30 +54,21 @@ public class App extends Application {
         primaryStage.setScene(scene);
         primaryStage.show();
 
-        SimulatorParams simulatorParams = new SimulatorParams(60, 140, 33.5, 800, 200, 0, 0, 1000);
-        Worker worker = createWorker(canvas, simulatorParams);
+        SimulatorParams simulatorParams = new SimulatorParams(60, 140, 33.5, 800, 200, 0, 0, 100000);
+        worker = createWorker(canvas, simulatorParams);
         primaryStage.setOnCloseRequest(getWindowCloseHandler(worker));
-        startWorker(canvas, worker);
+        workerThread = new Thread(worker);
+        workerThread.start();
     }
 
     private EventHandler<WindowEvent> getWindowCloseHandler(Worker worker) {
-        return new EventHandler<WindowEvent>() {
-            @Override
-            public void handle(WindowEvent event) {
-                worker.stop();
-            }
-        };
+        return event -> worker.stop();
     }
 
     private Worker createWorker(Canvas canvas, SimulatorParams simulatorParams) {
         SceneSimulator sceneSimulator = context.getBean(SceneSimulator.class, simulatorParams);
         SceneRenderer sceneRenderer = context.getBean(SceneRenderer.class);
         return context.getBeanFactory().getBean(Worker.class, canvas, sceneSimulator, sceneRenderer);
-    }
-
-    private void startWorker(Canvas canvas, Worker worker) {
-        Thread workerThread = new Thread(worker);
-        workerThread.start();
     }
 
 }

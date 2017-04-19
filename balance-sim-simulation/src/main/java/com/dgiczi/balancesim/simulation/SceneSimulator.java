@@ -9,6 +9,7 @@ import org.jbox2d.common.Vec2;
 import org.jbox2d.dynamics.*;
 import org.jbox2d.dynamics.joints.Joint;
 import org.jbox2d.dynamics.joints.JointType;
+import org.jbox2d.dynamics.joints.WheelJoint;
 import org.jbox2d.dynamics.joints.WheelJointDef;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Scope;
@@ -76,8 +77,8 @@ public class SceneSimulator {
         jointDef.frequencyHz = JOINT_FRQ;
         jointDef.type = JointType.WHEEL;
         jointDef.maxMotorTorque = (float) params.getMaxTorque();
-        jointDef.enableMotor = true;
-        return world.createJoint(jointDef);
+        WheelJoint joint = (WheelJoint)world.createJoint(jointDef);
+        return joint;
     }
 
     public static Body addBody(World world, SimulatorParams params) {

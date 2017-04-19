@@ -33,11 +33,10 @@ public class SceneRenderer {
     private static final int SCALE_OFFSET = 40;
     private static final int ROAD_OFFSET = 45;
     //Sizes
-    private static final int TICK_GAP = 10;
-    public static final double GRID_LINE_WIDTH = 0.5;
+    private static final double GRID_LINE_WIDTH = 0.5;
     private static final double SCALE_LINE_WIDTH = 0.5;
     private static final double ROAD_LINE_WIDTH = 0.5;
-    public static final int GRID_STEP = 10; //mm
+    private static final int GRID_STEP = 10; //mm
     //Formatting
     private static final NumberFormat numberFormat = createNumberFormat();
 
@@ -162,12 +161,13 @@ public class SceneRenderer {
         double width = gc.getCanvas().getWidth();
         double height = gc.getCanvas().getHeight();
 
+        double tickStepPx = GRID_STEP / mmPerPx;
         int scaleStartInPx = (int) Math.round(state.getPosX() / mmPerPx - width / 2);
-        int minorTickOffset = (Math.abs(TICK_GAP - scaleStartInPx)) % TICK_GAP;
-        int startTickCount = scaleStartInPx / TICK_GAP;
-        int tickCountToDraw = (int) (width + minorTickOffset) / TICK_GAP;
+        int minorTickOffset = (Math.abs((int) tickStepPx - scaleStartInPx)) % (int) tickStepPx;
+        int startTickCount = (int) (scaleStartInPx / tickStepPx);
+        int tickCountToDraw = (int) ((width + minorTickOffset) / tickStepPx);
         for (int i = 0; i < tickCountToDraw; i++) {
-            int tickPosition = minorTickOffset + i * TICK_GAP;
+            double tickPosition = minorTickOffset + i * tickStepPx;
             DistanceGridTickType tickType = getTickType(startTickCount, i);
             gc.setStroke(tickType.getColor());
             gc.strokeLine(tickPosition, height - SCALE_OFFSET, tickPosition, height - SCALE_OFFSET + tickType.getHeight());
