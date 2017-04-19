@@ -21,28 +21,29 @@ public class SceneSimulator {
 
     private static final float GROUND_WIDTH = 100000f;
     private static final float GROUND_HEIGHT = 0.1f;
-    private static final float DEFAULT_DENSITY = 10f;
+    private static final float DEFAULT_DENSITY = 1f;
     private static final float GROUND_FRICTION = 1;
     private static final float GROUND_DENSITY = 0;
     private static final int JOINT_FRQ = 100;
     private static final float JOINT_DAMPING_RATIO = 0f;
     private static final float GRAVITY = -100f;
-    private static final int VELOCITY_ITERATIONS = 8;
-    private static final int POSITION_ITERATIONS = 3;
+    private static final int VELOCITY_ITERATIONS = 80;
+    private static final int POSITION_ITERATIONS = 30;
     private static final float INIT_PUSH_FORCE = -100000f;
-    private static final float WHEEL_FRICTION = 1.25f;
+    private static final float WHEEL_FRICTION = 1.50f;
+    private static final float BODY_FRICTION = 1.50f;
     public static final double SCALE = 0.1;
 
     private final SimulatorParams params;
     private final World world;
-    private final Joint wheelJoint;
+    private final WheelJoint wheelJoint;
     private final Body body;
     private final Body wheel;
 
     public SceneSimulator(SimulatorParams params) {
         this.params = params.withScale(SCALE);
         this.world = createWorld(this.params);
-        this.wheelJoint = world.getJointList();
+        this.wheelJoint = (WheelJoint) world.getJointList();
         this.body = wheelJoint.getBodyA();
         this.wheel = wheelJoint.getBodyB();
     }
@@ -92,13 +93,18 @@ public class SceneSimulator {
         bodyDef.position = new Vec2(0f, posY);
         Body body = world.createBody(bodyDef);
 
-        body.createFixture(bodyShape, DEFAULT_DENSITY);
+        //body.createFixture(bodyShape, DEFAULT_DENSITY);
+        FixtureDef bodyFixture = new FixtureDef();
+        bodyFixture.shape = bodyShape;
+        bodyFixture.friction = BODY_FRICTION;
+        bodyFixture.density = DEFAULT_DENSITY;
+        body.createFixture(bodyFixture);
 
         MassData massData = new MassData();
         body.getMassData(massData);
         massData.mass = (float) params.getBodyMass();
         massData.center.set((float) params.getCentroidX(), (float) params.getCentroidY());
-        body.setMassData(massData);
+        //body.setMassData(massData);
         return body;
     }
 
@@ -120,7 +126,7 @@ public class SceneSimulator {
         MassData massData = new MassData();
         wheel.getMassData(massData);
         massData.mass = (float) params.getWheelsMass();
-        wheel.setMassData(massData);
+        //wheel.setMassData(massData);
 
         return wheel;
     }
@@ -159,4 +165,25 @@ public class SceneSimulator {
         SimulatorState state = new SimulatorState(posX, posY, angle, wheelSpeed, angularSpeed).withScale(1 / SCALE);
         return state;
     }
+
+    public void setMotorForward() {
+        wheelJoint.setMotorSpeed((float)-params.getMaxSpeed());
+        wheelJoint.enableMotor(true);
+    }
+
+    public void setMotorBackWard() {
+        wheelJoint.setMotorSpeed((float)params.getMaxSpeed());
+        wheelJoint.enableMotor(true);
+    }
+
+    public void setMotorZero() {
+        wheelJoint.setMotorSpeed(0);
+        wheelJoint.enableMotor(true);
+    }
+
+    public void setMotorOff() {
+        wheelJoint.setMotorSpeed(0);
+        wheelJoint.enableMotor(false);
+    }
+
 }

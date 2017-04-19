@@ -15,9 +15,10 @@ public class SimulatorParams {
     private final double centroidX; //mm
     private final double centroidY; //mm
     private final double maxTorque;
+    private final double maxSpeed; //unitPerSec
 
     public SimulatorParams(double bodyWidth, double bodyHeight, double wheelRadius, double bodyMass, double wheelsMass,
-                           double centroidX, double centroidY, double maxTorque) {
+                           double centroidX, double centroidY, double maxTorque, double maxSpeed) {
         this.bodyWidth = bodyWidth;
         this.bodyHeight = bodyHeight;
         this.wheelRadius = wheelRadius;
@@ -26,13 +27,14 @@ public class SimulatorParams {
         this.centroidX = centroidX;
         this.centroidY = centroidY;
         this.maxTorque = maxTorque;
+        this.maxSpeed = maxSpeed;
     }
 
     public SimulatorParams withScale(double scale) {
         return new SimulatorParams(
                 bodyWidth * scale, bodyHeight * scale, wheelRadius * scale,
                 bodyMass, wheelsMass, centroidX * scale,
-                centroidY * scale, maxTorque);
+                centroidY * scale, maxTorque, maxSpeed * scale);
     };
 
     public double getBodyWidth() {
@@ -71,4 +73,7 @@ public class SimulatorParams {
         return maxTorque;
     }
 
+    public double getMaxSpeed() {
+        return maxSpeed;
+    }
 }

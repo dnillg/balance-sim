@@ -27,7 +27,8 @@ public class SceneRenderer {
     private static final Paint TYRE_WHEEL_COLOR = Color.BLACK;
     private static final Paint ROAD_LINE_COLOR = Color.gray(0.65);
     private static final Paint GRID_COLOR = Color.gray(0.45);
-    private static final Paint GRID_ORIGIN_COLOR = Color.gray(0.6);
+    private static final Paint GRID_5TH_COLOR = Color.gray(0.65);
+    private static final Paint GRID_ORIGIN_COLOR = Color.gray(0.85);
     //Positions
     private static final int DISTANCE_TEXT_OFFSET = 10;
     private static final int SCALE_OFFSET = 40;
@@ -41,7 +42,7 @@ public class SceneRenderer {
     private static final NumberFormat numberFormat = createNumberFormat();
 
     private static NumberFormat createNumberFormat() {
-        DecimalFormat decimalFormat = new DecimalFormat("#,##0.00");
+        DecimalFormat decimalFormat = new DecimalFormat("#,##0");
         DecimalFormatSymbols symbols = DecimalFormatSymbols.getInstance(Locale.ENGLISH);
         symbols.setGroupingSeparator(' ');
         decimalFormat.setDecimalFormatSymbols(symbols);
@@ -51,7 +52,6 @@ public class SceneRenderer {
     public void render(GraphicsContext gc, RenderParams params, RenderState state) {
         drawBackGround(gc);
         drawGrid(gc, params, state);
-        drawRoad(gc, params, state);
         drawDistanceScale(gc, params, state);
         drawBody(gc, params, state);
         drawWheel(gc, params, state);
@@ -79,8 +79,10 @@ public class SceneRenderer {
 
     private void drawHorizontalGridLines(GraphicsContext gc, double width, double height, double step) {
         int countToDraw = (int) ((height - ROAD_OFFSET) / step);
+        gc.setLineWidth(GRID_LINE_WIDTH);
         for (int i = 0; i < countToDraw; i++) {
-            double y = height - ROAD_OFFSET - (i + 1) * step;
+            gc.setStroke(getGridLineColor(0, i));
+            double y = height - ROAD_OFFSET - i * step;
             gc.strokeLine(0, y, width, y);
         }
     }
@@ -94,24 +96,22 @@ public class SceneRenderer {
         gc.setLineWidth(GRID_LINE_WIDTH);
 
         for (int i = 0; i < countToDraw; i++) {
-            if (startTickCount + i == 0) {
-                gc.setStroke(GRID_ORIGIN_COLOR);
-            } else {
-                gc.setStroke(GRID_COLOR);
-            }
+            gc.setStroke(getGridLineColor(startTickCount, i));
             double currentX = offset + i * stepPx;
             gc.strokeLine(currentX, 0, currentX, height - ROAD_OFFSET);
         }
     }
 
-    private void drawRoad(GraphicsContext gc, RenderParams params, RenderState state) {
-        double width = gc.getCanvas().getWidth();
-        double height = gc.getCanvas().getHeight();
-
-        gc.setFill(ROAD_LINE_COLOR);
-        gc.setStroke(ROAD_LINE_COLOR);
-        gc.setLineWidth(ROAD_LINE_WIDTH);
-        gc.strokeLine(0, height - ROAD_OFFSET, width, height - ROAD_OFFSET);
+    private Paint getGridLineColor(int startTickCount, int i) {
+        Paint color;
+        if (startTickCount + i == 0) {
+            color = GRID_ORIGIN_COLOR;
+        } else if((startTickCount + i) % 5 == 0) {
+            color = GRID_5TH_COLOR;
+        } else {
+            color = GRID_COLOR;
+        }
+        return color;
     }
 
     private void drawWheel(GraphicsContext gc, RenderParams params, RenderState state) {
