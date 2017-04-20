@@ -467,4 +467,72 @@ public class MiniPid {
             if(F<0) F*=-1;
         }
     }
+
+    public double getP() {
+        return P;
+    }
+
+    public double getI() {
+        return I;
+    }
+
+    public double getD() {
+        return D;
+    }
+
+    public double getF() {
+        return F;
+    }
+
+    public double getMaxIOutput() {
+        return maxIOutput;
+    }
+
+    public double getMaxError() {
+        return maxError;
+    }
+
+    public double getErrorSum() {
+        return errorSum;
+    }
+
+    public double getMaxOutput() {
+        return maxOutput;
+    }
+
+    public double getMinOutput() {
+        return minOutput;
+    }
+
+    public double getSetpoint() {
+        return setpoint;
+    }
+
+    public double getLastActual() {
+        return lastActual;
+    }
+
+    public boolean isFirstRun() {
+        return firstRun;
+    }
+
+    public boolean isReversed() {
+        return reversed;
+    }
+
+    public double getOutputRampRate() {
+        return outputRampRate;
+    }
+
+    public double getLastOutput() {
+        return lastOutput;
+    }
+
+    public double getOutputFilter() {
+        return outputFilter;
+    }
+
+    public double getSetpointRange() {
+        return setpointRange;
+    }
 }
