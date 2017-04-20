@@ -25,10 +25,9 @@ public class SceneRenderer {
     private static final Paint OUTER_WHEEL_COLOR = Color.gray(0.15);
     private static final Paint INNER_WHEEL_COLOR = Color.BLACK;
     private static final Paint TYRE_WHEEL_COLOR = Color.BLACK;
-    private static final Paint ROAD_LINE_COLOR = Color.gray(0.65);
-    private static final Paint GRID_COLOR = Color.gray(0.45);
-    private static final Paint GRID_5TH_COLOR = Color.gray(0.65);
-    private static final Paint GRID_ORIGIN_COLOR = Color.gray(0.85);
+    private static final Paint GRID_COLOR = Color.gray(0.5);
+    private static final Paint GRID_GROUP_COLOR = Color.gray(0.7);
+    private static final Paint GRID_ORIGIN_COLOR = Color.gray(0.9);
     //Positions
     private static final int DISTANCE_TEXT_OFFSET = 10;
     private static final int SCALE_OFFSET = 40;
@@ -36,8 +35,8 @@ public class SceneRenderer {
     //Sizes
     private static final double GRID_LINE_WIDTH = 0.5;
     private static final double SCALE_LINE_WIDTH = 0.5;
-    private static final double ROAD_LINE_WIDTH = 0.5;
     private static final int GRID_STEP = 10; //mm
+    public static final int GRID_GROUP_SIZE = 10;
     //Formatting
     private static final NumberFormat numberFormat = createNumberFormat();
 
@@ -106,8 +105,8 @@ public class SceneRenderer {
         Paint color;
         if (startTickCount + i == 0) {
             color = GRID_ORIGIN_COLOR;
-        } else if((startTickCount + i) % 5 == 0) {
-            color = GRID_5TH_COLOR;
+        } else if((startTickCount + i) % GRID_GROUP_SIZE == 0) {
+            color = GRID_GROUP_COLOR;
         } else {
             color = GRID_COLOR;
         }

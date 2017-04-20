@@ -28,7 +28,7 @@ public class VisualizationScene {
 
     private final SimulatorParams simulatorParams = new SimulatorParams(
             60, 140, 33.5, 800, 200,
-            0, 0, 1000000, 100);
+            -5, -10, 1000000, 100);
     private final SimulationWorkerFactory simulationWorkerFactory;
 
     private SimulationWorker simulationWorker;

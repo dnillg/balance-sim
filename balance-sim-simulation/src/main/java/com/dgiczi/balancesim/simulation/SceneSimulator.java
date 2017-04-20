@@ -102,9 +102,9 @@ public class SceneSimulator {
 
         MassData massData = new MassData();
         body.getMassData(massData);
-        massData.mass = (float) params.getBodyMass();
+        //massData.mass = (float) params.getBodyMass();
         massData.center.set((float) params.getCentroidX(), (float) params.getCentroidY());
-        //body.setMassData(massData);
+        body.setMassData(massData);
         return body;
     }
 
@@ -173,6 +173,12 @@ public class SceneSimulator {
 
     public void setMotorBackWard() {
         wheelJoint.setMotorSpeed((float)params.getMaxSpeed());
+        wheelJoint.enableMotor(true);
+    }
+
+    public void setMotorSpeed(double speed) {
+        double limitedSpeed = Math.max(Math.min(speed, params.getMaxSpeed()), -params.getMaxSpeed());
+        wheelJoint.setMotorSpeed((float) limitedSpeed);
         wheelJoint.enableMotor(true);
     }
 
