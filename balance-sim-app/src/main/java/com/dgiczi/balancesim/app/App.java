@@ -1,7 +1,7 @@
 package com.dgiczi.balancesim.app;
 
 import com.dgiczi.balancesim.app.configuration.MainContextConfiguration;
-import com.dgiczi.balancesim.app.scenes.VisualizationScene;
+import com.dgiczi.balancesim.app.scenes.visualization.VisualizationScene;
 import javafx.application.Application;
 import javafx.stage.Stage;
 import org.springframework.boot.SpringApplication;
@@ -29,6 +29,7 @@ public class App extends Application {
     public void start(Stage primaryStage) throws InterruptedException {
         visualtizationScene = context.getBean(VisualizationScene.class);
         visualtizationScene.init(primaryStage);
+        visualtizationScene.show();
     }
 
 }

@@ -5,35 +5,33 @@ import com.dgiczi.balancesim.simulation.SceneSimulator;
 import com.dgiczi.balancesim.simulation.control.ControlStrategy;
 import com.dgiczi.balancesim.simulation.model.SimulatorParams;
 import javafx.scene.canvas.Canvas;
+import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import javax.naming.ldap.Control;
 
 
 @Component
+@Scope(BeanDefinition.SCOPE_PROTOTYPE)
 public class SimulationWorkerFactory {
 
-    private final SceneRenderer sceneRenderer;
-    private final ControlStrategy controlStrategy;
     private final ConfigurableApplicationContext context;
 
     private SimulatorParams params;
-    private Canvas canvas;
+    private ControlStrategy controlStrategy;
 
-    public SimulationWorkerFactory(SceneRenderer sceneRenderer, ControlStrategy controlStrategy, ConfigurableApplicationContext context) {
-        this.sceneRenderer = sceneRenderer;
+    public SimulationWorkerFactory(ConfigurableApplicationContext context) {
         this.context = context;
-        this.controlStrategy = controlStrategy;
     }
 
     public SimulationWorker build() {
-        if(params == null || canvas == null){
+        if(params == null){
             throw new IllegalStateException("Builder is not initialized!");
         }
         SceneSimulator sceneSimulator = context.getBeanFactory().getBean(SceneSimulator.class, params);
-        controlStrategy.setMaxOutput(params.getMaxSpeed());
-        SimulationWorker simulationWorker = context.getBeanFactory().getBean(SimulationWorker.class, canvas, sceneSimulator, controlStrategy, sceneRenderer);
+        SimulationWorker simulationWorker = context.getBeanFactory().getBean(SimulationWorker.class, sceneSimulator, controlStrategy);
         return simulationWorker;
     }
 
@@ -41,7 +39,7 @@ public class SimulationWorkerFactory {
         this.params = params;
     }
 
-    public void setCanvas(Canvas canvas) {
-        this.canvas = canvas;
+    public void setControlStrategy(ControlStrategy controlStrategy) {
+        this.controlStrategy = controlStrategy;
     }
 }
