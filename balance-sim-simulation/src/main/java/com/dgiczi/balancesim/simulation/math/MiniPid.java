@@ -1,15 +1,11 @@
 package com.dgiczi.balancesim.simulation.math;
 
-/**
- * Small, easy to use PID implementation with advanced controller capability.<br>
- * Minimal usage:<br>
- * MiniPID pid = new MiniPID(p,i,d); <br>
- * ...looping code...{ <br>
- *   output= pid.getOutput(sensorvalue,target); <br>
- * }
- *
- * @see http://brettbeauregard.com/blog/2011/04/improving-the-beginners-pid-direction/improving-the-beginners-pid-introduction
- */
+import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
+
+@Component
+@Scope(BeanDefinition.SCOPE_PROTOTYPE)
 public class MiniPid {
     //**********************************
     // Class private variables

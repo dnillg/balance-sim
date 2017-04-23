@@ -1,16 +1,8 @@
 package com.dgiczi.balancesim.app;
 
 import com.dgiczi.balancesim.simulation.SceneSimulator;
-import com.dgiczi.balancesim.simulation.model.SimulatorParams;
-import javafx.scene.Scene;
-import org.jbox2d.collision.shapes.CircleShape;
-import org.jbox2d.collision.shapes.PolygonShape;
+import com.dgiczi.balancesim.simulation.model.SimulationParams;
 import org.jbox2d.common.Vec2;
-import org.jbox2d.dynamics.Body;
-import org.jbox2d.dynamics.BodyDef;
-import org.jbox2d.dynamics.BodyType;
-import org.jbox2d.dynamics.World;
-import org.jbox2d.dynamics.joints.*;
 import org.jbox2d.testbed.framework.*;
 import org.jbox2d.testbed.framework.j2d.TestPanelJ2D;
 
@@ -26,12 +18,12 @@ public class TestApp extends TestbedTest {
         //m_world = new World(new Vec2(0.0F, -10.0F));
         getWorld().setGravity(new Vec2(0, -100));
 
-        SimulatorParams simulatorParams = new SimulatorParams(
+        SimulationParams simulationParams = new SimulationParams(
                 60, 140, 33.5, 800, 200,
                 0, 0, 900000000, 10);
-        simulatorParams = simulatorParams.withScale(0.1);
+        simulationParams = simulationParams.withScale(0.1);
         SceneSimulator.addGround(getWorld());
-        SceneSimulator.addBalanceRobotParts(getWorld(), simulatorParams);
+        SceneSimulator.addBalanceRobotParts(getWorld(), simulationParams);
         getWorld().getJointList().getBodyA().applyForce(new Vec2(-100000f, 0), new Vec2(0f, 0));
     }
 

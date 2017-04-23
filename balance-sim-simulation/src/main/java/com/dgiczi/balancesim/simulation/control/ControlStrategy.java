@@ -1,12 +1,10 @@
 package com.dgiczi.balancesim.simulation.control;
 
-import com.dgiczi.balancesim.simulation.model.SimulatorState;
-
-import java.util.Optional;
+import com.dgiczi.balancesim.simulation.actions.UserAction;
+import com.dgiczi.balancesim.simulation.model.SimulationState;
 
 public interface ControlStrategy {
 
-    Optional<Double> getControlValue(SimulatorState state);
-    void setMaxOutput(double maxOutput);
+    UserAction getControlValue(SimulationState state);
 
 }

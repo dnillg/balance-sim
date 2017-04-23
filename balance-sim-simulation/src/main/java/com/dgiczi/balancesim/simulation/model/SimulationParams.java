@@ -1,11 +1,7 @@
 package com.dgiczi.balancesim.simulation.model;
 
 
-import com.dgiczi.balancesim.simulation.math.Triangle;
-import com.sun.javafx.fxml.builder.TriangleMeshBuilder;
-import javafx.scene.shape.TriangleMesh;
-
-public class SimulatorParams {
+public class SimulationParams {
 
     private final double bodyWidth; //mm
     private final double bodyHeight; //mm
@@ -17,8 +13,8 @@ public class SimulatorParams {
     private final double maxTorque;
     private final double maxSpeed; //unitPerSec
 
-    public SimulatorParams(double bodyWidth, double bodyHeight, double wheelRadius, double bodyMass, double wheelsMass,
-                           double centroidX, double centroidY, double maxTorque, double maxSpeed) {
+    public SimulationParams(double bodyWidth, double bodyHeight, double wheelRadius, double bodyMass, double wheelsMass,
+                            double centroidX, double centroidY, double maxTorque, double maxSpeed) {
         this.bodyWidth = bodyWidth;
         this.bodyHeight = bodyHeight;
         this.wheelRadius = wheelRadius;
@@ -30,8 +26,8 @@ public class SimulatorParams {
         this.maxSpeed = maxSpeed;
     }
 
-    public SimulatorParams withScale(double scale) {
-        return new SimulatorParams(
+    public SimulationParams withScale(double scale) {
+        return new SimulationParams(
                 bodyWidth * scale, bodyHeight * scale, wheelRadius * scale,
                 bodyMass, wheelsMass, centroidX * scale,
                 centroidY * scale, maxTorque, maxSpeed * scale);

@@ -4,8 +4,10 @@ import com.dgiczi.balancesim.app.core.SimulationWorkerFactory;
 import com.dgiczi.balancesim.app.core.SimulationWorker;
 import com.dgiczi.balancesim.render.SceneRenderer;
 import com.dgiczi.balancesim.render.model.RenderParams;
+import com.dgiczi.balancesim.render.model.RenderState;
 import com.dgiczi.balancesim.simulation.control.ControlStrategy;
-import com.dgiczi.balancesim.simulation.model.SimulatorParams;
+import com.dgiczi.balancesim.simulation.model.SimulationParams;
+import com.dgiczi.balancesim.simulation.model.SimulationState;
 import javafx.application.Platform;
 import javafx.event.EventHandler;
 import javafx.scene.Scene;
@@ -17,6 +19,7 @@ import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -25,19 +28,30 @@ import org.springframework.stereotype.Component;
 @Scope(BeanDefinition.SCOPE_PROTOTYPE)
 public class VisualizationScene {
 
+    private static final Logger log = LoggerFactory.getLogger(VisualizationScene.class);
     private static final int WINDOW_WIDTH = 800;
     private static final int WINDOW_HEIGHT = 600;
     private static final double MM_PER_PX = 1.0 / 2.5;
     private static final String WINDOW_TITLE = "Balance-Sim";
-    private static final Logger log = LoggerFactory.getLogger(VisualizationScene.class);
+    private static final SimulationParams simulationParams = new SimulationParams(
+            60,
+            140,
+            33.5,
+            800,
+            200,
+            -1,
+            -10,
+            1000000,
+            100);
+    private static final RenderParams renderParams = new RenderParams(
+            simulationParams.getBodyWidth(),
+            simulationParams.getBodyHeight(),
+            simulationParams.getWheelRadius(),
+            MM_PER_PX);
 
-    private final SimulatorParams simulatorParams = new SimulatorParams(
-            60, 140, 33.5, 800, 200,
-            -0, -10, 1000000, 100);
-    private final RenderParams renderParams = new RenderParams(60, 140, 33.5, MM_PER_PX);
     private final SimulationWorkerFactory simulationWorkerFactory;
     private final SceneRenderer sceneRenderer;
-    private final ControlStrategy controlStrategy;
+    private final ObjectProvider<ControlStrategy> controlStrategyFactory;
 
     private SimulationWorker simulationWorker;
 
@@ -46,11 +60,11 @@ public class VisualizationScene {
     private BorderPane mainBorderPane;
     private Canvas canvas;
 
-    public VisualizationScene(SimulationWorkerFactory simulationWorkerFactory, SceneRenderer sceneRenderer, ControlStrategy controlStrategy) {
+    public VisualizationScene(SimulationWorkerFactory simulationWorkerFactory, SceneRenderer sceneRenderer,
+                              ObjectProvider<ControlStrategy> controlStrategyFactory) {
         this.simulationWorkerFactory = simulationWorkerFactory;
         this.sceneRenderer = sceneRenderer;
-        this.controlStrategy = controlStrategy;
-        controlStrategy.setMaxOutput(simulatorParams.getMaxSpeed());
+        this.controlStrategyFactory = controlStrategyFactory;
     }
 
     public void init(Stage stage) {
@@ -64,13 +78,18 @@ public class VisualizationScene {
 
     private synchronized void resetSimulation() {
         if (simulationWorker != null) {
-            simulationWorker.stop();
+            simulationWorker.softStop();
         }
-        simulationWorkerFactory.setParams(simulatorParams);
-        simulationWorkerFactory.setControlStrategy(controlStrategy);
+        simulationWorkerFactory.setParams(simulationParams);
+        simulationWorkerFactory.setControlStrategyFactory(controlStrategyFactory);
+        simulationWorkerFactory.setStateCallback(this::renderCallback);
         simulationWorker = simulationWorkerFactory.build();
-        simulationWorker.setRenderCallback((state)->Platform.runLater(()->sceneRenderer.render(canvas.getGraphicsContext2D(), renderParams, state)));
         simulationWorker.start();
+    }
+
+    private void renderCallback(SimulationState simulationState) {
+        RenderState state = new RenderState(simulationState.getPosX(), simulationState.getPosY(), simulationState.getTilt());
+        Platform.runLater(() -> sceneRenderer.render(canvas.getGraphicsContext2D(), renderParams, state));
     }
 
     private void registerEventHandlers(Stage stage) {
@@ -84,8 +103,8 @@ public class VisualizationScene {
     }
 
     private EventHandler<KeyEvent> getKeyEventHandler() {
-        return (keyEvent)->{
-            if(keyEvent.getEventType() == KeyEvent.KEY_PRESSED) {
+        return (keyEvent) -> {
+            if (keyEvent.getEventType() == KeyEvent.KEY_PRESSED) {
                 if (keyEvent.getCode() == KeyCode.LEFT) {
                     simulationWorker.setMotorBackward();
                     keyEvent.consume();
@@ -96,7 +115,7 @@ public class VisualizationScene {
                     simulationWorker.setMotorZero();
                     keyEvent.consume();
                 }
-            } else if(keyEvent.getEventType() == KeyEvent.KEY_RELEASED) {
+            } else if (keyEvent.getEventType() == KeyEvent.KEY_RELEASED) {
                 if (keyEvent.getCode() == KeyCode.R) {
                     resetSimulation();
                     keyEvent.consume();
@@ -133,8 +152,8 @@ public class VisualizationScene {
 
     private EventHandler<WindowEvent> getWindowCloseHandler() {
         return event -> {
-            if(simulationWorker != null) {
-                simulationWorker.stop();
+            if (simulationWorker != null) {
+                simulationWorker.softStop();
             }
         };
     }

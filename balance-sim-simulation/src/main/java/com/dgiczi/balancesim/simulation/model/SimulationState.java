@@ -1,6 +1,6 @@
 package com.dgiczi.balancesim.simulation.model;
 
-public class SimulatorState {
+public class SimulationState {
 
     private final double posX; //mm
     private final double posY; //mm
@@ -8,7 +8,7 @@ public class SimulatorState {
     private final double speed; //mm/s
     private final double tiltSpeed; //degPerSec (+|-)
 
-    public SimulatorState(double posX, double posY, double tilt, double speed, double tiltSpeed) {
+    public SimulationState(double posX, double posY, double tilt, double speed, double tiltSpeed) {
         this.posX = posX;
         this.posY = posY;
         this.tilt = tilt;
@@ -16,8 +16,8 @@ public class SimulatorState {
         this.tiltSpeed = tiltSpeed;
     }
 
-    public SimulatorState withScale(double scale) {
-        return new SimulatorState(
+    public SimulationState withScale(double scale) {
+        return new SimulationState(
                 posX * scale, posY * scale,  tilt, speed * scale, tiltSpeed);
     }
 

@@ -1,7 +1,9 @@
 package com.dgiczi.balancesim.simulation;
 
-import com.dgiczi.balancesim.simulation.model.SimulatorParams;
-import com.dgiczi.balancesim.simulation.model.SimulatorState;
+import com.dgiczi.balancesim.simulation.actions.UserAction;
+import com.dgiczi.balancesim.simulation.model.BalanceBot;
+import com.dgiczi.balancesim.simulation.model.SimulationParams;
+import com.dgiczi.balancesim.simulation.model.SimulationState;
 import org.jbox2d.collision.shapes.CircleShape;
 import org.jbox2d.collision.shapes.MassData;
 import org.jbox2d.collision.shapes.PolygonShape;
@@ -19,6 +21,7 @@ import org.springframework.stereotype.Component;
 @Scope(BeanDefinition.SCOPE_PROTOTYPE)
 public class SceneSimulator {
 
+    public static final double SCALE = 0.1;
     private static final float GROUND_WIDTH = 100000f;
     private static final float GROUND_HEIGHT = 0.1f;
     private static final float DEFAULT_DENSITY = 1f;
@@ -32,27 +35,32 @@ public class SceneSimulator {
     private static final float INIT_PUSH_FORCE = -100000f;
     private static final float WHEEL_FRICTION = 1.50f;
     private static final float BODY_FRICTION = 1.50f;
-    public static final double SCALE = 0.1;
 
-    private final SimulatorParams params;
+    private final SimulationParams params;
     private final World world;
-    private final WheelJoint wheelJoint;
-    private final Body body;
-    private final Body wheel;
+    private final BalanceBot balanceBot;
 
-    public SceneSimulator(SimulatorParams params) {
+
+    public SceneSimulator(SimulationParams params) {
         this.params = params.withScale(SCALE);
         this.world = createWorld(this.params);
-        this.wheelJoint = (WheelJoint) world.getJointList();
-        this.body = wheelJoint.getBodyA();
-        this.wheel = wheelJoint.getBodyB();
+
+        BalanceBot balanceBot = createBalanceBot();
+        this.balanceBot = balanceBot;
+    }
+
+    private BalanceBot createBalanceBot() {
+        WheelJoint wheelJoint = (WheelJoint) world.getJointList();
+        Body body = wheelJoint.getBodyA();
+        Body wheel = wheelJoint.getBodyB();
+        return new BalanceBot(body, wheel, wheelJoint);
     }
 
     public void init() {
-        wheelJoint.getBodyA().applyForce(new Vec2(INIT_PUSH_FORCE, 0f), new Vec2(0f, 0f));
+        balanceBot.getBody().applyForce(new Vec2(INIT_PUSH_FORCE, 0f), new Vec2(0f, 0f));
     }
 
-    private World createWorld(SimulatorParams params) {
+    private World createWorld(SimulationParams params) {
         Vec2 gravity = new Vec2(0, GRAVITY);
         World world = new World(gravity);
 
@@ -62,14 +70,14 @@ public class SceneSimulator {
         return world;
     }
 
-    public static Joint addBalanceRobotParts(World world, SimulatorParams params) {
+    public static Joint addBalanceRobotParts(World world, SimulationParams params) {
         Body wheel = addWheel(world, params);
         Body body = addBody(world, params);
         Joint joint = addJoint(world, params, wheel, body);
         return joint;
     }
 
-    private static Joint addJoint(World world, SimulatorParams params, Body wheel, Body body) {
+    private static Joint addJoint(World world, SimulationParams params, Body wheel, Body body) {
         WheelJointDef jointDef = new WheelJointDef();
         jointDef.initialize(body, wheel, new Vec2(0, (float) params.getWheelDiameter()), new Vec2(0, 0));
         jointDef.localAxisA.set(1, 0);
@@ -82,7 +90,7 @@ public class SceneSimulator {
         return joint;
     }
 
-    public static Body addBody(World world, SimulatorParams params) {
+    public static Body addBody(World world, SimulationParams params) {
         PolygonShape bodyShape = new PolygonShape();
         bodyShape.setAsBox((float) params.getBodyWidth(), (float) params.getBodyHeight());
         bodyShape.m_centroid.set((float) params.getCentroidX(), (float) params.getCentroidY());
@@ -93,7 +101,6 @@ public class SceneSimulator {
         bodyDef.position = new Vec2(0f, posY);
         Body body = world.createBody(bodyDef);
 
-        //body.createFixture(bodyShape, DEFAULT_DENSITY);
         FixtureDef bodyFixture = new FixtureDef();
         bodyFixture.shape = bodyShape;
         bodyFixture.friction = BODY_FRICTION;
@@ -108,7 +115,7 @@ public class SceneSimulator {
         return body;
     }
 
-    public static Body addWheel(World world, SimulatorParams params) {
+    public static Body addWheel(World world, SimulationParams params) {
         CircleShape wheelShape = new CircleShape();
         wheelShape.setRadius((float) params.getWheelDiameter());
 
@@ -125,8 +132,8 @@ public class SceneSimulator {
 
         MassData massData = new MassData();
         wheel.getMassData(massData);
-        massData.mass = (float) params.getWheelsMass();
-        //wheel.setMassData(massData);
+        //massData.mass = (float) params.getWheelsMass();
+        wheel.setMassData(massData);
 
         return wheel;
     }
@@ -149,47 +156,22 @@ public class SceneSimulator {
         return ground;
     }
 
-    public void step(double dt) {
+    public synchronized void step(double dt) {
         world.step((float) dt, VELOCITY_ITERATIONS, POSITION_ITERATIONS);
-        //world.setContinuousPhysics(true);
-
     }
 
-    public SimulatorState getState() {
-        double posX = wheel.getPosition().x;
-        double posY = wheel.getPosition().y - params.getWheelDiameter();
-        double angle = Math.toDegrees(body.getAngle());
-        double wheelSpeed = wheel.getLinearVelocity().x;
-        double angularSpeed = Math.toDegrees(body.getAngularVelocity());
+    public SimulationState getState() {
+        double posX = balanceBot.getWheel().getPosition().x;
+        double posY =  balanceBot.getWheel().getPosition().y - params.getWheelDiameter();
+        double angle = Math.toDegrees( balanceBot.getBody().getAngle());
+        double speed = balanceBot.getWheel().getLinearVelocity().x;
+        double angularSpeed = Math.toDegrees(balanceBot.getBody().getAngularVelocity());
 
-        SimulatorState state = new SimulatorState(posX, posY, angle, wheelSpeed, angularSpeed).withScale(1 / SCALE);
+        SimulationState state = new SimulationState(posX, posY, angle, speed, angularSpeed).withScale(1 / SCALE);
         return state;
     }
 
-    public void setMotorForward() {
-        wheelJoint.setMotorSpeed((float)-params.getMaxSpeed());
-        wheelJoint.enableMotor(true);
+    public synchronized void applyUserAction(UserAction action) {
+        action.apply(balanceBot, world);
     }
-
-    public void setMotorBackWard() {
-        wheelJoint.setMotorSpeed((float)params.getMaxSpeed());
-        wheelJoint.enableMotor(true);
-    }
-
-    public void setMotorSpeed(double speed) {
-        double limitedSpeed = Math.max(Math.min(speed, params.getMaxSpeed()), -params.getMaxSpeed());
-        wheelJoint.setMotorSpeed((float) limitedSpeed);
-        wheelJoint.enableMotor(true);
-    }
-
-    public void setMotorZero() {
-        wheelJoint.setMotorSpeed(0);
-        wheelJoint.enableMotor(true);
-    }
-
-    public void setMotorOff() {
-        wheelJoint.setMotorSpeed(0);
-        wheelJoint.enableMotor(false);
-    }
-
 }
